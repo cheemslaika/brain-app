@@ -7,15 +7,15 @@ phases:
   pre_build:
     commands:
       - echo Logging in to DockerHub...
-      - echo $Yogesh@123 | docker login -u $cheemslaika --password-stdin
+      - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
   build:
     commands:
       - echo Building Docker image...
-      - docker build -t $cheemslaika/brain-app:latest .
+      - docker build -t $DOCKER_USERNAME/brain-app:latest .
   post_build:
     commands:
       - echo Pushing Docker image...
-      - docker push $cheemslaika/brain-app:latest
+      - docker push $DOCKER_USERNAME/brain-app:latest
       - echo Updating kubeconfig...
       - aws eks update-kubeconfig --region ap-south-1 --name brain-cluster
       - kubectl apply -f deployment.yaml
