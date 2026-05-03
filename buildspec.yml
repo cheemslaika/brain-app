@@ -6,9 +6,9 @@ phases:
       - echo "Starting build process"
 
   pre_build:
-  commands:
-    - echo "Logging into DockerHub"
-    - printf "%s" "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    commands:
+      - echo "Logging into DockerHub"
+      - printf "%s" "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
   build:
     commands:
@@ -16,7 +16,7 @@ phases:
       - docker build -t brain-app .
       - docker tag brain-app $DOCKER_USERNAME/brain-app:latest
 
-    post_build:
+  post_build:
     commands:
       - echo "Pushing Docker image"
       - docker push $DOCKER_USERNAME/brain-app:latest
