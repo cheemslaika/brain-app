@@ -243,9 +243,9 @@ kubectl logs <pod-name>
 
 ---
 
-## 📸 Screenshots (To Include)
+## 📸 Screenshots 
 
-* CodePipeline success
+* CodePipeline success  
 * CodeBuild logs
 * Kubernetes pods running
 * LoadBalancer external IP
