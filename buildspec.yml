@@ -16,7 +16,14 @@ phases:
       - docker build -t brain-app .
       - docker tag brain-app $DOCKER_USERNAME/brain-app:latest
 
-  post_build:
+    post_build:
     commands:
       - echo "Pushing Docker image"
       - docker push $DOCKER_USERNAME/brain-app:latest
+
+      - echo "Updating kubeconfig"
+      - aws eks update-kubeconfig --region ap-south-1 --name brain-cluster
+
+      - echo "Deploying to Kubernetes"
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
