@@ -3,20 +3,20 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Installing dependencies...
+      - echo "Starting build process"
+
   pre_build:
     commands:
-      - echo Logging in to DockerHub...
+      - echo "Logging into DockerHub"
       - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
   build:
     commands:
-      - echo Building Docker image...
-      - docker build -t $DOCKER_USERNAME/brain-app:latest .
+      - echo "Building Docker image"
+      - docker build -t brain-app .
+      - docker tag brain-app $DOCKER_USERNAME/brain-app:latest
+
   post_build:
     commands:
-      - echo Pushing Docker image...
+      - echo "Pushing Docker image"
       - docker push $DOCKER_USERNAME/brain-app:latest
-      - echo Updating kubeconfig...
-      - aws eks update-kubeconfig --region ap-south-1 --name brain-cluster
-      - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
