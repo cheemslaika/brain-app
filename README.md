@@ -1,92 +1,287 @@
-DevOps Practice Project – Dist Directory
+# 🚀 Brain Tasks App – End-to-End DevOps Deployment
 
-This repository contains the production-ready build files (dist folder) for DevOps practice and deployment exercises.
+## 📌 Project Overview
 
-It is intentionally structured to help learners focus on CI/CD pipelines, hosting, containerization, and infrastructure setup rather than application development.
+This project demonstrates a complete **DevOps pipeline** to deploy a React application into a **production-ready Kubernetes environment (AWS EKS)** using modern DevOps tools.
 
-📁 What This Repository Contains
+It covers:
 
-dist/ – Compiled and production-ready static files
+* Application containerization
+* CI/CD pipeline automation
+* Kubernetes deployment
+* Monitoring and logging
 
-HTML
+---
 
-CSS
+## 🏗️ Architecture
 
-JavaScript
+```
+GitHub → CodePipeline → CodeBuild → DockerHub → AWS EKS → LoadBalancer → Browser
+                                      ↓
+                                 CloudWatch Logs
+```
 
-Assets (images, fonts, etc.)
+---
 
-These files are ready to deploy to:
+## 🧰 Tech Stack
 
-Web servers (Nginx / Apache)
+| Category         | Tools Used                      |
+| ---------------- | ------------------------------- |
+| Source Control   | GitHub                          |
+| CI/CD            | AWS CodePipeline, AWS CodeBuild |
+| Containerization | Docker                          |
+| Registry         | DockerHub                       |
+| Orchestration    | Kubernetes (AWS EKS)            |
+| Monitoring       | AWS CloudWatch                  |
+| Application      | React (Vite build)              |
 
-Cloud platforms (AWS S3, Azure Blob, GCP Storage)
+---
 
-Containerized environments (Docker + Nginx)
+## 📦 Application Setup
 
-Kubernetes clusters
+### 🔹 Clone Repository
 
-CI/CD pipeline demonstrations
+```bash
+git clone https://github.com/Vennilavanguvi/Brain-Tasks-App.git
+cd Brain-Tasks-App
+```
 
-🎯 Purpose of This Repository
+### 🔹 Application Runs On
 
-This repository is designed for:
+```
+Port: 3000 (development)
+Port: 80 (containerized production)
+```
 
-DevOps beginners
+---
 
-CI/CD practice
+## 🐳 Dockerization
 
-Deployment pipeline testing
+### 🔹 Dockerfile
 
-Docker & Kubernetes deployment exercises
+* Multi-stage build used for optimized image
+* Static files served via Nginx
 
-Web server configuration practice
+### 🔹 Build Image
 
-Reverse proxy and load balancer setup
+```bash
+docker build -t brain-app .
+```
 
-The goal is to simulate real-world deployment scenarios using already built application files.
+### 🔹 Run Container
 
-❓ Why is there NO package.json?
+```bash
+docker run -d -p 3000:80 brain-app
+```
 
-You may notice that this repository does not include:
+---
 
-package.json
+## 📦 Docker Registry (DockerHub)
 
-node_modules
+### 🔹 Tag Image
 
-Source code (src/)
+```bash
+docker tag brain-app <your-username>/brain-app:latest
+```
 
-Build tools configuration
+### 🔹 Push Image
 
-✅ Reason:
+```bash
+docker push <your-username>/brain-app:latest
+```
 
-This repository only contains the final production build output (dist), not the development source code.
+---
 
-In a typical project:
+## ☸️ Kubernetes Deployment (EKS)
 
-Developers write source code.
+### 🔹 Create EKS Cluster
 
-The project is built using tools like:
+```bash
+eksctl create cluster \
+--name brain-cluster \
+--region ap-south-1 \
+--nodegroup-name workers \
+--node-type t3.medium \
+--nodes 2
+```
 
-Node.js
+---
 
-Webpack
+### 🔹 Deployment YAML
 
-Vite
+* Creates pods with Docker image
 
-React (or other frameworks)
+### 🔹 Service YAML
 
-A dist/ folder is generated.
+* Type: LoadBalancer
+* Exposes application publicly
 
-Only the production build is deployed to servers.
+---
 
-This repository represents step 4 only.
+### 🔹 Deploy Application
 
-Since this is already the compiled output:
+```bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+```
 
-No dependencies are required
+---
 
-No build process is required
+### 🔹 Verify Deployment
 
-No package.json is needed
-test change
+```bash
+kubectl get pods
+kubectl get svc
+```
+
+---
+
+### 🌐 Access Application
+
+```
+http://<EXTERNAL-IP>
+```
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+### 🔹 CodePipeline Stages
+
+1. **Source**
+
+   * GitHub repository connected via CodeConnections
+
+2. **Build (CodeBuild)**
+
+   * Docker image build
+   * Push to DockerHub
+
+3. **Deploy (CodeBuild)**
+
+   * Update kubeconfig
+   * Deploy to EKS using kubectl
+
+---
+
+## 📄 buildspec.yml
+
+```yaml
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Starting build process"
+
+  pre_build:
+    commands:
+      - echo "Logging into DockerHub"
+      - printf "%s" "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+  build:
+    commands:
+      - echo "Building Docker image"
+      - docker build -t brain-app .
+      - docker tag brain-app $DOCKER_USERNAME/brain-app:latest
+
+  post_build:
+    commands:
+      - echo "Pushing Docker image"
+      - docker push $DOCKER_USERNAME/brain-app:latest
+
+      - echo "Updating kubeconfig"
+      - aws eks update-kubeconfig --region ap-south-1 --name brain-cluster
+
+      - echo "Deploying to Kubernetes"
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
+```
+
+---
+
+## 📊 Monitoring (CloudWatch)
+
+### 🔹 Build & Deploy Logs
+
+* Integrated with CloudWatch Logs
+* Log group:
+
+```
+/aws/codebuild/brain-build
+```
+
+### 🔹 View Logs
+
+* CodeBuild → Build history → View logs
+* CloudWatch → Log groups
+
+---
+
+### 🔹 Application Logs
+
+```bash
+kubectl logs <pod-name>
+```
+
+---
+
+### 🔹 Alerts (Optional)
+
+* CloudWatch Alarms configured for:
+
+  * High CPU usage
+  * Build failures
+
+---
+
+## 🔐 Security Best Practices
+
+* Used **DockerHub Personal Access Token**
+* Avoided hardcoding credentials
+* Used environment variables in CodeBuild
+
+---
+
+## 📸 Screenshots (To Include)
+
+* CodePipeline success
+* CodeBuild logs
+* Kubernetes pods running
+* LoadBalancer external IP
+* Application UI in browser
+* CloudWatch logs
+
+---
+
+## 📌 Submission Details
+
+* **GitHub Repo:** (Add your repo link)
+* **LoadBalancer URL:** (Add external URL)
+
+---
+
+## 🧠 Key Learnings
+
+* End-to-end CI/CD pipeline setup
+* Docker image lifecycle
+* Kubernetes deployment on EKS
+* CloudWatch monitoring & debugging
+* Handling real-world DevOps issues
+
+---
+
+## 🚀 Future Improvements
+
+* Use AWS ECR instead of DockerHub
+* Add Prometheus + Grafana monitoring
+* Implement auto-scaling (HPA)
+* Use Terraform for infrastructure automation
+
+---
+
+## 🙌 Conclusion
+
+This project demonstrates a **production-ready DevOps workflow** integrating CI/CD, containerization, Kubernetes, and monitoring using AWS services.
+
+---
