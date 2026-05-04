@@ -6,21 +6,20 @@ phases:
       - echo "Starting build process"
 
   pre_build:
-    commands:
-      - echo "Logging into Amazon ECR"
-      - aws ecr get-login-password --region us-east-1 \
-        | docker login --username AWS --password-stdin 979779072173.dkr.ecr.us-east-1.amazonaws.com
+  commands:
+    - echo "Logging into Amazon ECR"
+    - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 979779072173.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
       - echo "Building Docker image"
       - docker build -t brain-app .
-      - docker tag brain-app 979779072173.dkr.ecr.us-east-1.amazonaws.com/brain-app:latest
+      - docker tag brain-app 979779072173.dkr.ecr.ap-south-1.amazonaws.com/brain-app:latest
 
   post_build:
     commands:
       - echo "Pushing Docker image"
-      - docker push 979779072173.dkr.ecr.us-east-1.amazonaws.com/brain-app:latest
+      - docker push 979779072173.dkr.ecr.ap-south-1.amazonaws.com/brain-app:latest
 
       - echo "Updating kubeconfig"
       - aws eks update-kubeconfig --region ap-south-1 --name brain-cluster
